@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tasks
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # Опционально: docker compose --profile app up -d --build
+  api:
+    build: .
+    profiles: ["app"]
+    environment:
+      ConnectionStrings__Postgres: Host=postgres;Database=tasks;Username=postgres;Password=postgres
+      RabbitMq__HostName: rabbitmq
+    ports:
+      - "5080:8080"
+    depends_on:
+      - postgres
+      - rabbitmq
+    stop_grace_period: 10s
